@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Créateur de visuels — Histoires</title>
+<style>
+  :root { --bg:#0b0c10; --card:#15171d; --card2:#1c1f27; --accent:#e0a93e; --text:#f2f2f2; --muted:#8b909c; --border:#262a34; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; padding-bottom:70px; }
+  header { padding:26px 18px 10px; text-align:center; }
+  h1 { font-size:21px; margin:0 0 4px; font-weight:800; letter-spacing:-0.3px; }
+  p.sub { color:var(--muted); font-size:13.5px; margin:0; }
+  main { max-width:640px; margin:0 auto; padding:14px 16px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; margin-bottom:16px; }
+  .card h2 { font-size:14px; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin:0 0 14px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:14px 0 5px; }
+  label:first-of-type { margin-top:0; }
+  input[type=text], select, textarea, input[type=color] { width:100%; padding:11px 13px; border-radius:10px; border:1px solid var(--border); background:var(--card2); color:var(--text); font-size:15px; font-family:inherit; }
+  input[type=color] { padding:4px; height:44px; }
+  textarea { min-height:220px; resize:vertical; line-height:1.55; }
+  .row { display:flex; gap:10px; }
+  .row > div { flex:1; }
+  .help { font-size:12px; color:var(--muted); margin-top:7px; line-height:1.5; white-space:pre-line; }
+  .check { display:flex; align-items:center; gap:8px; margin:12px 0; font-size:14px; }
+  .check input { width:18px; height:18px; }
+  button { background:var(--accent); color:#1a1408; border:none; padding:14px 18px; border-radius:10px; font-size:15px; font-weight:800; width:100%; margin-top:16px; cursor:pointer; letter-spacing:0.2px; }
+  button.secondary { background:var(--card2); color:var(--text); border:1px solid var(--border); }
+  button:disabled { opacity:0.5; }
+  button:active { transform:scale(0.99); }
+  .palette { display:flex; gap:8px; margin-top:8px; }
+  .swatch { width:28px; height:28px; border-radius:50%; border:2px solid rgba(255,255,255,0.15); }
+  .gallery { display:grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap:12px; margin-top:16px; }
+  .slide-box { background:#000; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+  .slide-box canvas { width:100%; display:block; }
+  .slide-box .dl { display:block; text-align:center; padding:8px; font-size:12px; color:var(--accent); text-decoration:none; font-weight:600; }
+  .status { font-size:13px; color:var(--muted); margin-top:10px; min-height:16px; }
+  video { width:100%; border-radius:10px; margin-top:12px; background:#000; }
+  a.dl-video { display:block; text-align:center; padding:12px; margin-top:8px; background:var(--card2); border-radius:10px; color:var(--accent); text-decoration:none; font-weight:700; }
+  .file-row { display:flex; align-items:center; gap:10px; margin-top:6px; }
+  .file-row img { width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <h1>📖 Créateur de visuels</h1>
+  <p class="sub">Carrousels, reels images et vidéos — cohérents, générés dans le navigateur, hors ligne.</p>
+</header>
+
+<main>
+  <div class="card">
+    <h2>Histoire</h2>
+    <label>Titre *</label>
+    <input type="text" id="title" placeholder="Le message que je n'ai jamais envoyé" />
+
+    <div class="row">
+      <div><label>Série (optionnel)</label><input type="text" id="series" placeholder="Confessions" /></div>
+      <div><label>Saison / épisode</label><input type="text" id="season" placeholder="S2 · Ep 4" /></div>
+    </div>
+
+    <label>Chapitres *</label>
+    <textarea id="chapters" placeholder="# Titre du chapitre 1
+Texte du chapitre. Une ligne vide = une nouvelle image.
+
+Deuxième paragraphe = deuxième image du même chapitre.
+
+# Titre du chapitre 2
+Suite de l'histoire...
+
+(Sans aucun « # », tout le texte est traité comme une histoire unique, découpée automatiquement.)"></textarea>
+    <div class="help">Une ligne « # Titre » = nouveau chapitre. Une ligne vide = nouvelle slide.
+Pour le thème Dialogue : commence un paragraphe par « Nom: » pour attribuer la bulle à ce nom. À 2 interlocuteurs : gauche/droite classique. À 3 ou plus : mode conversation de groupe — le 1er nom reste à droite, tous les autres à gauche avec leur propre couleur.</div>
+  </div>
+
+  <div class="card">
+    <h2>Style</h2>
+    <div class="row">
+      <div>
+        <label>Ambiance</label>
+        <select id="group">
+          <option value="default">Automatique</option>
+          <option value="Récit personnel">Récit personnel</option>
+          <option value="Correspondance">Correspondance</option>
+          <option value="Dialogue">Dialogue</option>
+          <option value="Mystère">Mystère</option>
+          <option value="Aventure & imaginaire">Aventure & imaginaire</option>
+          <option value="Science & futur">Science & futur</option>
+          <option value="Spirituel & philosophique">Spirituel & philosophique</option>
+          <option value="Humour & social">Humour & social</option>
+          <option value="Documentaire">Documentaire</option>
+        </select>
+      </div>
+      <div>
+        <label>Format</label>
+        <select id="format">
+          <option value="CAROUSEL">Carrousel 1080×1350</option>
+          <option value="REEL_SLIDESHOW" selected>Reel images 1080×1920</option>
+          <option value="REEL_VIDEO">Reel vidéo 1080×1920</option>
+        </select>
+      </div>
+    </div>
+    <div class="palette" id="palettePreview"></div>
+    <canvas id="livePreview" style="width:100%;border-radius:10px;margin-top:10px;display:block;background:#000;"></canvas>
+
+    <label>Mise en page (optionnel)</label>
+    <select id="templateOverride">
+      <option value="">Automatique (selon l'ambiance)</option>
+      <option value="default">Carte classique</option>
+      <option value="letter">Lettre</option>
+      <option value="dialogue">Dialogue</option>
+      <option value="report">Rapport</option>
+      <option value="quote">Citation</option>
+    </select>
+
+    <label>Police (optionnel)</label>
+    <select id="fontOverride">
+      <option value="">Automatique (selon l'ambiance)</option>
+      <option value="serif">Serif élégante</option>
+      <option value="sans">Sans-serif moderne</option>
+      <option value="mono">Monospace / rapport</option>
+      <option value="rounded">Ronde et douce</option>
+    </select>
+    <div class="check"><input type="checkbox" id="safeZones" /><label style="margin:0;">Repères zone de sécurité Reels/Stories (aperçu, non exporté)</label></div>
+
+    <label>Couleur d'accent (optionnel — sinon celle du thème)</label>
+    <input type="color" id="accentOverride" value="#e0a93e" />
+
+    <label>Nom de page (filigrane)</label>
+    <input type="text" id="brand" placeholder="@matachaine" />
+    <label>Logo / avatar (petit badge, optionnel)</label>
+    <div class="file-row">
+      <input type="file" id="logoFile" accept="image/*" />
+      <img id="logoPreview" style="display:none;" />
+    </div>
+
+    <label>Photo de fond (optionnel — remplace le fond généré, reprise sur toute la série)</label>
+    <div class="file-row">
+      <input type="file" id="bgFile" accept="image/*" />
+      <img id="bgPreview" style="display:none;" />
+    </div>
+    <div class="help">Sans photo : fond premium généré automatiquement (dégradés + texture). Avec photo : elle est réutilisée sur toutes les slides, teintée à la couleur du thème pour rester cohérente.</div>
+
+    <label>Texte par image</label>
+    <select id="density">
+      <option value="180">Court — une idée par image</option>
+      <option value="380" selected>Moyen — 2 à 3 phrases par image</option>
+      <option value="650">Long — un vrai paragraphe par image</option>
+    </select>
+
+    <label>Qualité d'export</label>
+    <select id="exportQuality">
+      <option value="jpeg" selected>JPEG — léger, recommandé</option>
+      <option value="png">PNG — qualité maximale, fichiers plus lourds</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h2>Structure</h2>
+    <div class="check"><input type="checkbox" id="autoCover" checked /><label style="margin:0;">Slide de couverture automatique</label></div>
+    <div class="check"><input type="checkbox" id="chapterDividers" checked /><label style="margin:0;">Slide de titre entre chaque chapitre</label></div>
+    <div class="check"><input type="checkbox" id="autoOutro" checked /><label style="margin:0;">Slide de fin (appel à l'action)</label></div>
+    <label>Texte de fin</label>
+    <input type="text" id="ctaText" value="Abonne-toi pour la suite →" />
+
+    <button id="generateBtn">✨ Générer les visuels</button>
+    <div class="status" id="status"></div>
+    <button id="clearDraftBtn" class="secondary" style="margin-top:10px;">🗑 Effacer le brouillon enregistré</button>
+  </div>
+
+  <div class="card">
+    <h2>Mes brouillons</h2>
+    <label>Nom du brouillon</label>
+    <input type="text" id="draftName" placeholder="Ex : Histoire de Léa et Sam" />
+    <button id="saveDraftAsBtn" class="secondary">💾 Enregistrer une copie sous ce nom</button>
+    <label>Brouillons enregistrés</label>
+    <select id="savedDraftsList"><option value="">— Choisir —</option></select>
+    <div class="row">
+      <div><button id="loadDraftBtn" class="secondary">📂 Charger</button></div>
+      <div><button id="deleteDraftBtn" class="secondary">🗑 Supprimer</button></div>
+    </div>
+  </div>
+
+  <div class="card" id="videoCard" style="display:none;">
+    <h2>Vidéo</h2>
+    <div class="row">
+      <div>
+        <label>Durée par slide</label>
+        <select id="vidDuration">
+          <option value="2.2">Rapide — 2,2 s</option>
+          <option value="3.2" selected>Normal — 3,2 s</option>
+          <option value="4.5">Lent — 4,5 s</option>
+        </select>
+      </div>
+      <div>
+        <label>Zoom (Ken Burns)</label>
+        <select id="vidZoom">
+          <option value="0">Aucun</option>
+          <option value="0.04">Léger</option>
+          <option value="0.07" selected>Normal</option>
+          <option value="0.12">Fort</option>
+        </select>
+      </div>
+    </div>
+    <label>Transition</label>
+    <select id="vidTransition">
+      <option value="fade" selected>Fondu enchaîné</option>
+      <option value="cut">Coupure nette</option>
+    </select>
+    <button id="videoBtn" class="secondary">🎬 Générer la vidéo</button>
+    <div class="status" id="videoStatus"></div>
+    <video id="videoPreview" controls style="display:none;"></video>
+    <a id="videoDownload" class="dl-video" style="display:none;">⬇ Télécharger la vidéo</a>
+  </div>
+
+  <div class="card" id="galleryCard" style="display:none;">
+    <h2>Visuels générés</h2>
+    <button id="downloadAllBtn" class="secondary">⬇ Tout télécharger</button>
+    <button id="downloadZipBtn" class="secondary">📦 Télécharger en .zip</button>
+    <button id="shareBtn" class="secondary">📤 Partager</button>
+    <button id="regenBtn" class="secondary">🔄 Nouvelle variante visuelle (même texte)</button>
+    <div class="help">Si le téléchargement groupé échoue sur mobile, utilise le bouton sous chaque image. Touche une image pour l'agrandir.</div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+
+  <div class="card" id="captionCard" style="display:none;">
+    <h2>Légende suggérée</h2>
+    <textarea id="captionText" readonly style="min-height:150px;"></textarea>
+    <button id="copyCaptionBtn" class="secondary">📋 Copier la légende</button>
+  </div>
+</main>
+
+<div id="previewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:100;align-items:center;justify-content:center;padding:24px;">
+  <img id="previewImg" style="max-width:100%;max-height:90vh;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.6);" />
+</div>
+
+<script>
+"use strict";
+// ============================================================================
+// COULEURS — conversions pour dériver des teintes harmonieuses (cohérence)
+// ============================================================================
+function hexToHsl(hex){
+  hex = hex.replace("#","");
+  const r=parseInt(hex.slice(0,2),16)/255, g=parseInt(hex.slice(2,4),16)/255, b=parseInt(hex.slice(4,6),16)/255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b); let h,s,l=(max+min)/2;
+  if(max===min){ h=s=0; } else {
+    const d=max-min; s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){ case r: h=(g-b)/d+(g<b?6:0); break; case g: h=(b-r)/d+2; break; default: h=(r-g)/d+4; }
+    h/=6;
+  }
+  return [h*360, s*100, l*100];
+}
+function hslToHex(h,s,l){
+  h/=360; s/=100; l/=100;
+  let r,g,b;
+  if(s===0){ r=g=b=l; } else {
+    const hue2rgb=(p,q,t)=>{ if(t<0)t+=1; if(t>1)t-=1; if(t<1/6) return p+(q-p)*6*t; if(t<1/2) return q; if(t<2/3) return p+(q-p)*(2/3-t)*6; return p; };
+    const q = l<0.5 ? l*(1+s) : l+s-l*s; const p = 2*l-q;
+    r=hue2rgb(p,q,h+1/3); g=hue2rgb(p,q,h); b=hue2rgb(p,q,h-1/3);
+  }
+  const to255=(x)=>Math.round(x*255).toString(16).padStart(2,"0");
+  return `#${to255(r)}${to255(g)}${to255(b)}`;
+}
+function shiftHue(hex, deg){ const [h,s,l]=hexToHsl(hex); return hslToHex((h+deg+360)%360, s, l); }
+function withAlpha(hex, a){ const v=Math.round(a*255).toString(16).padStart(2,"0"); return hex+v; }
+
+// ============================================================================
+// THÈMES — 9 ambiances (palette de fond, accent, police, texture, mise en page, motif)
+// ============================================================================
+const THEMES = {
+  "Récit personnel":            { colors:["#2e2420","#6b4a34"], accent:"#e8c9a0", font:"Georgia,'Iowan Old Style','Palatino Linotype',serif",           texture:"grain",     layout:"default",  motif:"book" },
+  "Correspondance":              { colors:["#241f16","#4d3c22"], accent:"#f1e3c6", font:"Georgia,'Palatino Linotype',serif",                              texture:"paper",     layout:"letter",   motif:"envelope" },
+  "Dialogue":                    { colors:["#141b26","#28394d"], accent:"#8fd3ff", font:"-apple-system,'Segoe UI',Roboto,Arial,sans-serif",               texture:"bubbles",   layout:"dialogue", motif:"bubble" },
+  "Mystère":                     { colors:["#08080b","#1c1822"], accent:"#b98cff", font:"-apple-system,'Segoe UI',Roboto,Arial,sans-serif",               texture:"vignette",  layout:"default",  motif:"magnifier" },
+  "Aventure & imaginaire":       { colors:["#0b202b","#175160"], accent:"#ffd166", font:"-apple-system,'Segoe UI',Roboto,Arial,sans-serif",               texture:"rays",      layout:"default",  motif:"compass" },
+  "Science & futur":             { colors:["#071523","#0e3252"], accent:"#4fd1ff", font:"'SF Mono','Cascadia Code',Consolas,'Segoe UI',sans-serif",       texture:"grid",      layout:"report",   motif:"atom" },
+  "Spirituel & philosophique":   { colors:["#14142499","#2b2b45"], accent:"#f3e5ab", font:"Georgia,serif",                                                  texture:"glow",      layout:"default",  motif:"flame" },
+  "Humour & social":             { colors:["#a83a3a","#c98f2e"], accent:"#fff3d6", font:"-apple-system,'Segoe UI',Roboto,Arial,sans-serif",               texture:"confetti",  layout:"default",  motif:"burst" },
+  "Documentaire":                { colors:["#0c1116","#1a2530"], accent:"#ffffff", font:"'SF Mono','Cascadia Code',Consolas,'Courier New',monospace",     texture:"grid-lines",layout:"report",   motif:"news" },
+  "default":                     { colors:["#0f0f12","#2a2a33"], accent:"#e0a93e", font:"-apple-system,'Segoe UI',Roboto,Arial,sans-serif",               texture:"gradient",  layout:"default",  motif:"dot" },
+};
+THEMES["Spirituel & philosophique"].colors = ["#141424","#2b2b45"]; // fix couleur mal formée ci-dessus
+const FORMATS = { CAROUSEL:{w:1080,h:1350}, REEL_SLIDESHOW:{w:1080,h:1920}, REEL_VIDEO:{w:1080,h:1920} };
+const FONT_OVERRIDES = {
+  serif: "Georgia,'Iowan Old Style','Palatino Linotype',serif",
+  sans: "-apple-system,'Segoe UI',Roboto,Arial,sans-serif",
+  mono: "'SF Mono','Cascadia Code',Consolas,'Courier New',monospace",
+  rounded: "'Trebuchet MS','Century Gothic',Arial,sans-serif",
+};
+
+// ============================================================================
+// PRNG déterministe
+// ============================================================================
+function hashSeed(str){
+  let h = 1779033703 ^ str.length;
+  for (let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h<<13)|(h>>>19); }
+  return function(){ h = Math.imul(h ^ (h>>>16), 2246822507); h = Math.imul(h ^ (h>>>13), 3266489909); return ((h ^= h>>>16)>>>0) / 4294967296; };
+}
+
+// ============================================================================
+// PARSING des chapitres — logique de découpe + structure multipartite
+// ============================================================================
+function parseChapters(raw){
+  const text = raw.replace(/\r\n/g,"\n").trim();
+  if (!text) return [];
+  const lines = text.split("\n");
+  const chapters = [];
+  let current = null;
+  for (const line of lines){
+    const m = line.match(/^#\s+(.*)/);
+    if (m){ current = { title:m[1].trim(), body:[] }; chapters.push(current); }
+    else { if (!current){ current = { title:null, body:[] }; chapters.push(current); } current.body.push(line); }
+  }
+  return chapters.map(ch => {
+    const paragraphs = ch.body.join("\n").split(/\n\s*\n/).map(p=>p.replace(/\n/g," ").trim()).filter(Boolean);
+    return { title: ch.title, paragraphs };
+  }).filter(ch => ch.paragraphs.length);
+}
+
+/** Regroupe des paragraphes consécutifs en slides plus riches (plusieurs
+ * phrases par image plutôt qu'une seule) jusqu'à atteindre ~targetChars.
+ * Un paragraphe déjà plus long que la cible reste seul sur sa slide
+ * (il sera quand même réduit/enroulé automatiquement au rendu). */
+function groupParagraphsIntoSlides(paragraphs, targetChars){
+  const slides = []; let buffer = [];
+  let bufferLen = 0;
+  for (const p of paragraphs){
+    if (bufferLen && bufferLen + p.length > targetChars * 1.3){
+      slides.push(buffer); buffer = [p]; bufferLen = p.length;
+    } else {
+      buffer.push(p); bufferLen += p.length;
+    }
+    if (bufferLen >= targetChars){ slides.push(buffer); buffer = []; bufferLen = 0; }
+  }
+  if (buffer.length) slides.push(buffer);
+  return slides;
+}
+
+/** Construit la liste plate de slides avec toutes les métadonnées de cohérence
+ * (index de chapitre, bornes pour la barre de progression segmentée, kicker). */
+function buildSlidePlan(chapters, opts){
+  const plan = [];
+  if (opts.autoCover) plan.push({ type:"cover" });
+  chapters.forEach((ch, ci) => {
+    if (opts.chapterDividers && chapters.length>1){
+      plan.push({ type:"divider", chapterIndex:ci, chapterCount:chapters.length,
+        title: ch.title || `Chapitre ${ci+1}`, partLabel:`Partie ${ci+1}/${chapters.length}` });
+    }
+    const grouped = groupParagraphsIntoSlides(ch.paragraphs, opts.targetChars);
+    grouped.forEach((paragraphs, si) => {
+      plan.push({
+        type:"content", paragraphs,
+        kicker: ch.title || (chapters.length>1 ? `Chapitre ${ci+1}` : null),
+        chapterIndex: ci, chapterCount: chapters.length,
+        partLabel: chapters.length>1 ? `Partie ${ci+1}/${chapters.length}` : null,
+      });
+    });
+  });
+  if (opts.autoOutro) plan.push({ type:"outro" });
+  const total = plan.length;
+  plan.forEach((s,i) => { s.slideIndex = i+1; s.total = total; });
+  return plan;
+}
+
+// ============================================================================
+// TEXTE — retour à la ligne mesuré + auto-fit de la taille de police
+// ============================================================================
+function wrapText(ctx, text, maxWidth, fontSpec){
+  ctx.font = fontSpec;
+  const words = text.split(/\s+/);
+  const lines = []; let cur = "";
+  for (const w of words){
+    const test = (cur + " " + w).trim();
+    if (ctx.measureText(test).width > maxWidth && cur){ lines.push(cur); cur = w; }
+    else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+/** Réduit la taille de police jusqu'à ce que TOUS les paragraphes tiennent dans
+ * la hauteur disponible (évite tout débordement, même avec plusieurs phrases
+ * groupées sur une même slide). Retourne un tableau de tableaux de lignes
+ * (un sous-tableau par paragraphe) + un espacement entre paragraphes. */
+function fitParagraphs(ctx, paragraphs, maxWidth, maxHeight, startSize, minSize, weight, fontFamily, lineHeightRatio){
+  let size = startSize;
+  const paraGapRatio = 0.55;
+  while (size > minSize){
+    const spec = `${weight} ${size}px ${fontFamily}`;
+    const wrapped = paragraphs.map(p => wrapText(ctx, p, maxWidth, spec));
+    const totalLines = wrapped.reduce((a,l)=>a+l.length,0);
+    const lineHeight = size*lineHeightRatio;
+    const blockH = totalLines*lineHeight + (paragraphs.length-1)*lineHeight*paraGapRatio;
+    if (blockH <= maxHeight) return { wrapped, size, lineHeight, paraGap: lineHeight*paraGapRatio };
+    size -= 2;
+  }
+  const spec = `${weight} ${minSize}px ${fontFamily}`;
+  const wrapped = paragraphs.map(p => wrapText(ctx, p, maxWidth, spec));
+  const lineHeight = minSize*lineHeightRatio;
+  return { wrapped, size:minSize, lineHeight, paraGap: lineHeight*paraGapRatio };
+}
+
+/** Dessine un bloc de paragraphes (issus de fitParagraphs) ligne par ligne,
+ * avec un interligne resserré et un espace un peu plus large entre paragraphes. */
+function drawParagraphBlock(ctx, wrapped, startY, { x, align, font, weight, size, lineHeight, paraGap, fillStyle, fontStyle }){
+  ctx.textAlign = align; ctx.fillStyle = fillStyle;
+  let y = startY + size;
+  wrapped.forEach((lines, pi) => {
+    lines.forEach((l) => { ctx.font = `${fontStyle||""} ${weight} ${size}px ${font}`.trim(); ctx.fillText(l, x, y); y += lineHeight; });
+    if (pi < wrapped.length-1) y += paraGap;
+  });
+  return y - startY - lineHeight + size; // hauteur totale utilisée
+}
+function paragraphBlockHeight(wrapped, lineHeight, paraGap){
+  const totalLines = wrapped.reduce((a,l)=>a+l.length,0);
+  return totalLines*lineHeight + (wrapped.length-1)*paraGap;
+}
+
+function drawTracked(ctx, text, x, y, spacing, align){
+  const widths = [...text].map(c => ctx.measureText(c).width);
+  const total = widths.reduce((a,b)=>a+b,0) + spacing*(text.length-1);
+  let cx = align==="center" ? x-total/2 : align==="right" ? x-total : x;
+  const prevAlign = ctx.textAlign; ctx.textAlign = "left";
+  [...text].forEach((c,i) => { ctx.fillText(c, cx, y); cx += widths[i] + spacing; });
+  ctx.textAlign = prevAlign;
+}
+
+// ============================================================================
+// FOND PREMIUM — dégradé de base + halos colorés + texture + grain + vignette
+// ============================================================================
+function drawPremiumBackground(ctx, w, h, theme, seed, chapterIndex, bgImage){
+  const rand = hashSeed(seed);
+  const hueShift = (chapterIndex||0) * 11; // légère variation par chapitre = variété sans casser la cohérence
+
+  if (bgImage){
+    // Photo importée par l'utilisateur : cover-fit, identique sur toute la
+    // série pour la cohérence, puis teintée à la couleur du thème.
+    const ir = bgImage.width / bgImage.height, tr = w / h;
+    let dw, dh, dx, dy;
+    if (ir > tr){ dh = h; dw = h*ir; dx = (w-dw)/2; dy = 0; } else { dw = w; dh = w/ir; dx = 0; dy = (h-dh)/2; }
+    ctx.drawImage(bgImage, dx, dy, dw, dh);
+    ctx.save(); ctx.globalCompositeOperation = "overlay";
+    const g = ctx.createLinearGradient(0,0,w,h);
+    g.addColorStop(0, withAlpha(theme.colors[0],0.45)); g.addColorStop(1, withAlpha(theme.colors[1],0.45));
+    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+    ctx.restore();
+    ctx.fillStyle = withAlpha(theme.colors[0], 0.18); ctx.fillRect(0,0,w,h);
+  } else {
+    const base = ctx.createLinearGradient(0,0,w,h);
+    base.addColorStop(0, theme.colors[0]); base.addColorStop(1, theme.colors[1]);
+    ctx.fillStyle = base; ctx.fillRect(0,0,w,h);
+  }
+
+  // halos colorés (dérivés de l'accent, décalés par chapitre + léger jitter par slide)
+  ctx.save();
+  ctx.globalCompositeOperation = "overlay";
+  [[0.22,0.18,40],[0.8,0.75,-30],[0.5,0.95,90]].forEach(([fx,fy,shift]) => {
+    const jx = (rand()-0.5)*0.12, jy = (rand()-0.5)*0.12;
+    const c = shiftHue(theme.accent, hueShift+shift);
+    const g = ctx.createRadialGradient(w*(fx+jx),h*(fy+jy),0, w*(fx+jx),h*(fy+jy), w*0.55);
+    g.addColorStop(0, withAlpha(c, bgImage?0.35:0.55)); g.addColorStop(1, withAlpha(c,0));
+    ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+  });
+  ctx.restore();
+
+  if (bgImage){
+    // légère vignette additionnelle pour garantir la lisibilité du texte sur une photo
+    const pv = ctx.createRadialGradient(w/2,h*0.5,h*0.25, w/2,h*0.5,h*0.85);
+    pv.addColorStop(0,"rgba(0,0,0,0)"); pv.addColorStop(1,"rgba(0,0,0,0.5)");
+    ctx.fillStyle = pv; ctx.fillRect(0,0,w,h);
+  }
+
+  drawTexture(ctx, theme.texture, w, h, rand, theme.accent);
+
+  // grain fin
+  ctx.save();
+  for (let i=0;i<55;i++){ ctx.fillStyle = `rgba(255,255,255,${0.02+rand()*0.045})`; ctx.beginPath(); ctx.arc(rand()*w, rand()*h, 0.8+rand()*1.6, 0, 7); ctx.fill(); }
+  ctx.restore();
+
+  // vignette
+  const vg = ctx.createRadialGradient(w/2,h*0.48,h*0.35, w/2,h*0.48,h*0.8);
+  vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,0.45)");
+  ctx.fillStyle = vg; ctx.fillRect(0,0,w,h);
+}
+
+function drawTexture(ctx, texture, w, h, rand, accent){
+  ctx.save();
+  switch(texture){
+    case "grain": break; // le grain global suffit
+    case "paper":
+      ctx.strokeStyle = accent; ctx.globalAlpha = 0.05;
+      for(let y=44;y<h;y+=48){ ctx.beginPath(); ctx.moveTo(64,y); ctx.lineTo(w-64,y); ctx.stroke(); }
+      break;
+    case "bubbles":
+      ctx.strokeStyle = accent; ctx.globalAlpha = 0.14; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(w*0.86,h*0.13,140,0,7); ctx.stroke();
+      ctx.beginPath(); ctx.arc(w*0.08,h*0.9,170,0,7); ctx.stroke();
+      break;
+    case "vignette":
+      ctx.fillStyle = accent; ctx.globalAlpha = 0.035;
+      for(let i=0;i<18;i++){ ctx.beginPath(); ctx.arc(rand()*w, rand()*h, 1+rand()*1.4, 0, 7); ctx.fill(); }
+      break;
+    case "rays":
+      ctx.fillStyle = accent; ctx.globalAlpha = 0.045;
+      for(let i=0;i<6;i++){ const x=(i/6)*w*1.4-w*0.2; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+90,0); ctx.lineTo(x-200,h); ctx.lineTo(x-290,h); ctx.closePath(); ctx.fill(); }
+      break;
+    case "grid":
+      ctx.strokeStyle = accent; ctx.globalAlpha = 0.05;
+      for(let x=0;x<w;x+=60){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+      for(let y=0;y<h;y+=60){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+      break;
+    case "grid-lines":
+      ctx.strokeStyle = accent; ctx.globalAlpha = 0.045;
+      for(let y=0;y<h;y+=96){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+      break;
+    case "glow": break; // couvert par les halos globaux
+    case "confetti":
+      ctx.fillStyle = accent;
+      for(let i=0;i<20;i++){ ctx.globalAlpha = 0.12+rand()*0.16; const s=6+rand()*9;
+        ctx.save(); ctx.translate(rand()*w, rand()*h); ctx.rotate(rand()*Math.PI); ctx.fillRect(-s/2,-s/2,s,s); ctx.restore(); }
+      break;
+    default: break;
+  }
+  ctx.restore();
+}
+
+// ============================================================================
+// ICÔNES vectorielles (une par ambiance) — badge de coin + grand motif de couverture
+// ============================================================================
+function drawIcon(ctx, motif, cx, cy, size, color, alpha){
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.globalAlpha = alpha;
+  ctx.lineWidth = Math.max(2, size*0.045); ctx.lineCap="round"; ctx.lineJoin="round";
+  const s = size/2;
+  switch(motif){
+    case "book":
+      ctx.beginPath(); ctx.moveTo(0,-s*0.5); ctx.quadraticCurveTo(-s*0.9,-s*0.75,-s*0.9,-s*0.1); ctx.quadraticCurveTo(-s*0.9,s*0.6,0,s*0.55); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-s*0.5); ctx.quadraticCurveTo(s*0.9,-s*0.75,s*0.9,-s*0.1); ctx.quadraticCurveTo(s*0.9,s*0.6,0,s*0.55); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-s*0.5); ctx.lineTo(0,s*0.55); ctx.stroke();
+      break;
+    case "envelope":
+      ctx.strokeRect(-s*0.9,-s*0.6,s*1.8,s*1.2);
+      ctx.beginPath(); ctx.moveTo(-s*0.9,-s*0.6); ctx.lineTo(0,s*0.05); ctx.lineTo(s*0.9,-s*0.6); ctx.stroke();
+      break;
+    case "bubble":
+      ctx.beginPath(); ctx.moveTo(-s*0.9,-s*0.7); ctx.arcTo(s*0.9,-s*0.7,s*0.9,s*0.5,s*0.3); ctx.arcTo(s*0.9,s*0.5,-s*0.9,s*0.5,s*0.3); ctx.arcTo(-s*0.9,s*0.5,-s*0.9,-s*0.7,s*0.3); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-s*0.3,s*0.5); ctx.lineTo(-s*0.5,s*0.9); ctx.lineTo(0,s*0.5); ctx.stroke();
+      break;
+    case "magnifier":
+      ctx.beginPath(); ctx.arc(-s*0.15,-s*0.15,s*0.55,0,7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(s*0.25,s*0.25); ctx.lineTo(s*0.85,s*0.85); ctx.stroke();
+      break;
+    case "compass":
+      ctx.beginPath(); ctx.arc(0,0,s*0.85,0,7); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,-s*0.5); ctx.lineTo(s*0.22,s*0.15); ctx.lineTo(0,s*0.5); ctx.lineTo(-s*0.22,s*0.15); ctx.closePath(); ctx.fill();
+      break;
+    case "atom":
+      ctx.beginPath(); ctx.ellipse(0,0,s*0.85,s*0.32,0,0,7); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0,0,s*0.85,s*0.32,Math.PI/3,0,7); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0,0,s*0.85,s*0.32,-Math.PI/3,0,7); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,s*0.12,0,7); ctx.fill();
+      break;
+    case "flame":
+      ctx.beginPath(); ctx.moveTo(0,s*0.7); ctx.quadraticCurveTo(-s*0.6,s*0.1,-s*0.15,-s*0.35); ctx.quadraticCurveTo(0,-s*0.1,s*0.1,-s*0.6); ctx.quadraticCurveTo(s*0.55,-s*0.05,s*0.15,s*0.35); ctx.quadraticCurveTo(s*0.35,s*0.5,0,s*0.7); ctx.closePath(); ctx.stroke();
+      break;
+    case "burst":
+      for(let i=0;i<8;i++){ const a=(i/8)*Math.PI*2; ctx.beginPath(); ctx.moveTo(Math.cos(a)*s*0.35,Math.sin(a)*s*0.35); ctx.lineTo(Math.cos(a)*s*0.9,Math.sin(a)*s*0.9); ctx.stroke(); }
+      break;
+    case "news":
+      ctx.strokeRect(-s*0.85,-s*0.65,s*1.7,s*1.3);
+      ctx.globalAlpha *= 0.85;
+      [-0.25,0.05,0.35].forEach(fy => { ctx.beginPath(); ctx.moveTo(-s*0.6,s*fy*1.0); ctx.lineTo(s*0.6,s*fy*1.0); ctx.stroke(); });
+      break;
+    default:
+      ctx.beginPath(); ctx.arc(0,0,s*0.7,0,7); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,s*0.1,0,7); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ============================================================================
+// BARRE DE PROGRESSION segmentée (façon story) — cohérence multi-chapitres
+// ============================================================================
+function drawProgressBar(ctx, w, plan, index, accent){
+  const margin=28, top=24, gapBetween=4, gapChapter=14, h=5;
+  const segCount = plan.length;
+  let totalGap = 0;
+  for (let i=1;i<segCount;i++) totalGap += (plan[i].chapterIndex!==undefined && plan[i].chapterIndex!==plan[i-1].chapterIndex) ? gapChapter : gapBetween;
+  const segW = (w - margin*2 - totalGap) / segCount;
+  let x = margin;
+  for (let i=0;i<segCount;i++){
+    const done = i < index-1, active = i === index-1;
+    ctx.fillStyle = done||active ? accent : "rgba(255,255,255,0.28)";
+    ctx.globalAlpha = active ? 1 : done ? 0.9 : 0.5;
+    roundRect(ctx, x, top, segW, h, h/2); ctx.fill();
+    ctx.globalAlpha = 1;
+    x += segW + (i<segCount-1 && plan[i+1].chapterIndex!==undefined && plan[i+1].chapterIndex!==plan[i].chapterIndex ? gapChapter : gapBetween);
+  }
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+// ============================================================================
+// BADGE DE MARQUE (logo/avatar + nom) — répété identique sur toutes les slides
+// ============================================================================
+function drawBrandBadge(ctx, w, h, brand, logoImg, accent, font){
+  if (!brand && !logoImg) return;
+  const cx = 48, cy = h-48, r = 20;
+  if (logoImg){
+    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.closePath(); ctx.clip();
+    ctx.drawImage(logoImg, cx-r, cy-r, r*2, r*2); ctx.restore();
+    ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.stroke();
+  } else if (brand){
+    ctx.fillStyle = withAlpha(accent,0.25); ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fill();
+    ctx.fillStyle = accent; ctx.font = `700 18px ${font}`; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(brand[0].toUpperCase(), cx, cy+1); ctx.textBaseline="alphabetic";
+  }
+  if (brand){
+    ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.font = `600 24px ${font}`; ctx.textAlign="left";
+    ctx.fillText(brand, cx+r+12, cy+8);
+  }
+}
+
+// ============================================================================
+// MISES EN PAGE — cover / outro / default / letter / dialogue / report
+// ============================================================================
+function drawCover(ctx, o){
+  const { w,h,theme,title,seriesTag,chapterCount,brand,logoImg,accent } = o;
+  drawIcon(ctx, theme.motif, w/2, h*0.30, 190, accent, 0.16);
+  if (seriesTag){
+    ctx.font = `700 26px ${theme.font}`; const tw = ctx.measureText(seriesTag).width;
+    ctx.fillStyle = withAlpha(accent,0.22); roundRect(ctx, w/2-tw/2-22, h*0.42-30, tw+44, 52, 26); ctx.fill();
+    ctx.fillStyle = accent; ctx.textAlign="center"; ctx.fillText(seriesTag, w/2, h*0.42+4);
+  }
+  const fit = fitParagraphs(ctx, [title], w-160, h*0.28, 74, 40, 800, theme.font, 1.12);
+  ctx.fillStyle = "white"; ctx.textAlign="center";
+  const startY = h*0.52;
+  const titleLines = fit.wrapped[0];
+  titleLines.forEach((l,i)=>{ ctx.font=`800 ${fit.size}px ${theme.font}`; ctx.fillText(l, w/2, startY+i*fit.lineHeight); });
+  if (chapterCount>1){
+    ctx.font = `500 26px ${theme.font}`; ctx.fillStyle = "rgba(255,255,255,0.65)";
+    ctx.fillText(`Une histoire en ${chapterCount} parties`, w/2, startY + titleLines.length*fit.lineHeight + 46);
+  }
+  drawChrome(ctx, o, {});
+}
+
+function drawOutro(ctx, o){
+  const { w,h,theme,ctaText,brand,logoImg,accent } = o;
+  drawIcon(ctx, theme.motif, w/2, h*0.36, 150, accent, 0.9);
+  ctx.font = `800 46px ${theme.font}`; ctx.fillStyle="white"; ctx.textAlign="center";
+  const fit = fitParagraphs(ctx, [ctaText], w-160, h*0.22, 46, 30, 800, theme.font, 1.2);
+  const startY = h*0.6;
+  fit.wrapped[0].forEach((l,i)=>{ ctx.font=`800 ${fit.size}px ${theme.font}`; ctx.fillText(l, w/2, startY+i*fit.lineHeight); });
+  drawChrome(ctx, o, { metaLeft: o.seriesTag });
+}
+
+function commonChrome(ctx, o){
+  drawChrome(ctx, o, { metaLeft: o.seriesTag, metaRight: o.partLabel });
+}
+
+/** Petite ligne de repère toujours au même endroit (sous la barre de
+ * progression) : série/saison à gauche, position du chapitre à droite.
+ * Affichée à l'identique sur toutes les slides pour la cohérence. */
+function drawMetaRow(ctx, w, left, right, accent, font){
+  if (!left && !right) return;
+  const y = 62;
+  ctx.font = `600 21px ${font}`;
+  if (left){ ctx.fillStyle = "rgba(255,255,255,0.55)"; drawTracked(ctx, left.toUpperCase(), 28, y, 1.4, "left"); }
+  if (right){ ctx.fillStyle = accent; drawTracked(ctx, right.toUpperCase(), w-28, y, 1.4, "right"); }
+}
+
+/** Chrome commun (barre de progression + repère haut + badge + compteur),
+ * réutilisé à l'identique sur la couverture, le contenu et la fin. */
+function drawChrome(ctx, o, { metaLeft=null, metaRight=null } = {}){
+  drawProgressBar(ctx, o.w, o.plan, o.slideIndex, o.accent);
+  drawMetaRow(ctx, o.w, metaLeft, metaRight, o.accent, o.theme.font);
+  drawBrandBadge(ctx, o.w, o.h, o.brand, o.logoImg, o.accent, o.theme.font);
+  ctx.font = `600 26px ${o.theme.font}`; ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.textAlign="right";
+  ctx.fillText(`${o.slideIndex}/${o.total}`, o.w-40, o.h-40);
+}
+
+function drawDivider(ctx, o){
+  const { w,h,theme,title,partLabel,accent } = o;
+  drawIcon(ctx, theme.motif, w/2, h*0.38, 170, accent, 0.22);
+  if (partLabel){
+    ctx.font = `700 26px ${theme.font}`; ctx.fillStyle = accent; ctx.textAlign="center";
+    drawTracked(ctx, partLabel.toUpperCase(), w/2, h*0.5, 3, "center");
+  }
+  ctx.strokeStyle = withAlpha(accent,0.5); ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(w/2-40, h*0.53); ctx.lineTo(w/2+40, h*0.53); ctx.stroke();
+  const fit = fitParagraphs(ctx, [title], w-160, h*0.24, 60, 34, 800, theme.font, 1.16);
+  ctx.fillStyle = "white"; ctx.textAlign="center";
+  const startY = h*0.62;
+  fit.wrapped[0].forEach((l,i)=>{ ctx.font=`800 ${fit.size}px ${theme.font}`; ctx.fillText(l, w/2, startY+i*fit.lineHeight); });
+  drawChrome(ctx, o, { metaLeft: o.seriesTag });
+}
+
+function drawDefault(ctx, o){
+  const { w,h,theme,kicker,paragraphs,accent } = o;
+  drawIcon(ctx, theme.motif, w-90, 130, 60, accent, 0.35);
+  const fit = fitParagraphs(ctx, paragraphs, w*0.8, h*0.5, 50, 28, 700, theme.font, 1.28);
+  const blockH = paragraphBlockHeight(fit.wrapped, fit.lineHeight, fit.paraGap) + 70;
+  const blockY = (h-blockH)/2;
+  ctx.font = `800 130px Georgia, serif`; ctx.fillStyle = withAlpha(accent,0.18); ctx.textAlign="left";
+  ctx.fillText("\u201C", 36, blockY-28);
+  ctx.fillStyle = "rgba(0,0,0,0.42)"; roundRect(ctx, 48, blockY-24, w-96, blockH+40, 22); ctx.fill();
+  ctx.fillStyle = accent; roundRect(ctx, 48, blockY-24, 6, blockH+40, 3); ctx.fill();
+  let ky = blockY-2;
+  if (kicker){ ctx.font=`700 28px ${theme.font}`; ctx.fillStyle=accent; ctx.textAlign="left"; ctx.fillText(kicker, 80, ky+18); }
+  drawParagraphBlock(ctx, fit.wrapped, blockY, { x:w/2, align:"center", font:theme.font, weight:700, size:fit.size, lineHeight:fit.lineHeight, paraGap:fit.paraGap, fillStyle:"white" });
+  commonChrome(ctx, o);
+}
+
+/** Trace un rectangle à bords déchirés (façon papier arraché) au lieu d'un
+ * rectangle net, pour le template Lettre. */
+function tornRectPath(ctx, x, y, w, h, amp, step){
+  ctx.beginPath();
+  ctx.moveTo(x, y + Math.sin(0)*amp);
+  for (let px=step; px<=w; px+=step) ctx.lineTo(x+px, y + Math.sin(px*0.55)*amp);
+  ctx.lineTo(x+w, y+h + Math.sin(w*0.55+1.3)*amp);
+  for (let px=w-step; px>=0; px-=step) ctx.lineTo(x+px, y+h + Math.sin(px*0.6+1.3)*amp);
+  ctx.closePath();
+}
+
+function drawLetter(ctx, o){
+  const { w,h,theme,kicker,paragraphs,accent } = o;
+  const margin=88, cardW=w-margin*2;
+  const fit = fitParagraphs(ctx, paragraphs, cardW-80, h*0.52, 42, 24, 400, theme.font, 1.32);
+  const blockH = paragraphBlockHeight(fit.wrapped, fit.lineHeight, fit.paraGap) + 130;
+  const cardY = (h-blockH)/2;
+  tornRectPath(ctx, margin, cardY, cardW, blockH, 5, 22);
+  ctx.fillStyle = "rgba(20,16,8,0.5)"; ctx.fill();
+  ctx.save(); tornRectPath(ctx, margin+10, cardY+10, cardW-20, blockH-20, 4, 20);
+  ctx.strokeStyle = withAlpha(accent,0.5); ctx.lineWidth=1.5; ctx.stroke(); ctx.restore();
+  ctx.fillStyle = withAlpha(accent,0.5);
+  ctx.beginPath(); ctx.moveTo(margin+cardW-46,cardY); ctx.lineTo(margin+cardW,cardY); ctx.lineTo(margin+cardW,cardY+46); ctx.closePath(); ctx.fill();
+  ctx.textAlign="center";
+  let ty = cardY+56;
+  if (kicker){ ctx.font=`italic 500 26px ${theme.font}`; ctx.fillStyle=accent; ctx.fillText(kicker, w/2, ty); ty+=36; }
+  drawParagraphBlock(ctx, fit.wrapped, ty+10, { x:w/2, align:"center", font:theme.font, weight:400, size:fit.size, lineHeight:fit.lineHeight, paraGap:fit.paraGap, fillStyle:"#f5efe0", fontStyle:"italic" });
+  commonChrome(ctx, o);
+}
+
+/** Mise en page "Citation" : texte seul, minimaliste, sans carte ni fond
+ * opaque — pour une phrase choc isolée. */
+function drawQuote(ctx, o){
+  const { w,h,theme,kicker,paragraphs,accent } = o;
+  const fit = fitParagraphs(ctx, paragraphs, w*0.74, h*0.4, 56, 30, 700, theme.font, 1.3);
+  const blockH = paragraphBlockHeight(fit.wrapped, fit.lineHeight, fit.paraGap);
+  const startY = (h-blockH)/2;
+  ctx.font = `800 220px Georgia, serif`; ctx.fillStyle = withAlpha(accent,0.22); ctx.textAlign="center";
+  ctx.fillText("\u201C", w/2, startY-30);
+  if (kicker){ ctx.font=`600 24px ${theme.font}`; ctx.fillStyle=accent; drawTracked(ctx, kicker.toUpperCase(), w/2, startY-78, 2.2, "center"); }
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.65)"; ctx.shadowBlur = 22;
+  drawParagraphBlock(ctx, fit.wrapped, startY, { x:w/2, align:"center", font:theme.font, weight:700, size:fit.size, lineHeight:fit.lineHeight, paraGap:fit.paraGap, fillStyle:"white", fontStyle:"italic" });
+  ctx.restore();
+  ctx.strokeStyle = withAlpha(accent,0.6); ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(w/2-50, startY+blockH+36); ctx.lineTo(w/2+50, startY+blockH+36); ctx.stroke();
+  commonChrome(ctx, o);
+}
+
+function extractSpeaker(text){
+  const m = (text||"").match(/^([^\n:]{1,24}):\s*(.+)$/s);
+  return m ? { speaker: m[1].trim(), rest: m[2].trim() } : null;
+}
+
+/** Attribue à chaque interlocuteur détecté un côté de bulle stable + une
+ * couleur distincte. À 2 interlocuteurs : alternance classique gauche/droite.
+ * À 3 ou plus : mode "conversation de groupe" — le premier nom rencontré
+ * reste à droite (comme "vous"), tous les autres passent à gauche avec
+ * leur propre couleur, comme dans une vraie appli de messagerie. */
+function computeSpeakerMeta(plan, theme){
+  const speakerSides = new Map(), speakerColors = new Map();
+  if (theme.layout !== "dialogue") return { speakerSides, speakerColors };
+  const order = [];
+  plan.forEach(slide => {
+    if (slide.type !== "content") return;
+    const m = extractSpeaker(slide.paragraphs[0]);
+    if (m && !order.includes(m.speaker)) order.push(m.speaker);
+  });
+  const groupMode = order.length >= 3;
+  order.forEach((name, idx) => {
+    speakerSides.set(name, groupMode ? (idx === 0 ? "right" : "left") : (idx % 2 === 0 ? "left" : "right"));
+    speakerColors.set(name, idx === 0 ? theme.accent : shiftHue(theme.accent, idx*47));
+  });
+  return { speakerSides, speakerColors, groupMode };
+}
+
+function drawDialogue(ctx, o){
+  const { w,h,theme,kicker,paragraphs,accent,slideIndex,speakerSides,speakerColors } = o;
+  const detected = extractSpeaker(paragraphs[0]);
+  const displayParagraphs = detected ? [detected.rest, ...paragraphs.slice(1)] : paragraphs;
+  const speakerName = detected ? detected.speaker : null;
+  const fromLeft = speakerName && speakerSides ? speakerSides.get(speakerName) === "left" : slideIndex % 2 === 1;
+  const speakerColor = (speakerName && speakerColors && speakerColors.get(speakerName)) || accent;
+  const bubbleW = w*0.76;
+  const fit = fitParagraphs(ctx, displayParagraphs, bubbleW-80, h*0.48, 40, 24, 500, theme.font, 1.32);
+  const blockH = paragraphBlockHeight(fit.wrapped, fit.lineHeight, fit.paraGap) + 80;
+  const bubbleY = (h-blockH)/2;
+  const bubbleX = fromLeft ? 44 : w-bubbleW-44;
+  const tailX = fromLeft ? bubbleX+56 : bubbleX+bubbleW-56;
+  const grad = ctx.createLinearGradient(bubbleX,bubbleY,bubbleX,bubbleY+blockH);
+  grad.addColorStop(0,"rgba(22,32,46,0.92)"); grad.addColorStop(1,"rgba(14,20,30,0.92)");
+  ctx.fillStyle = grad; roundRect(ctx,bubbleX,bubbleY,bubbleW,blockH,30); ctx.fill();
+  ctx.strokeStyle = withAlpha(speakerColor,0.4); ctx.lineWidth=1.4; roundRect(ctx,bubbleX,bubbleY,bubbleW,blockH,30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tailX-16,bubbleY+blockH); ctx.lineTo(tailX+16,bubbleY+blockH); ctx.lineTo(tailX,bubbleY+blockH+24); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+  // avatar façon messagerie, teinté par interlocuteur
+  const avX = fromLeft ? bubbleX-8 : bubbleX+bubbleW+8, avY = bubbleY+2, avR = 24;
+  ctx.fillStyle = withAlpha(speakerColor,0.3); ctx.beginPath(); ctx.arc(avX,avY,avR,0,7); ctx.fill();
+  ctx.strokeStyle = withAlpha(speakerColor,0.7); ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle = speakerColor; ctx.font = `700 22px ${theme.font}`; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText((speakerName||kicker||"?")[0].toUpperCase(), avX, avY+1); ctx.textBaseline="alphabetic";
+  const label = speakerName || kicker;
+  if (label){ ctx.font=`700 26px ${theme.font}`; ctx.fillStyle=speakerColor; ctx.textAlign="left"; ctx.fillText(label, bubbleX+36, bubbleY-22); }
+  drawParagraphBlock(ctx, fit.wrapped, bubbleY+10, { x:bubbleX+bubbleW/2, align:"center", font:theme.font, weight:500, size:fit.size, lineHeight:fit.lineHeight, paraGap:fit.paraGap, fillStyle:"white" });
+  commonChrome(ctx, o);
+}
+
+function drawReport(ctx, o){
+  const { w,h,theme,kicker,partLabel,paragraphs,accent } = o;
+  const margin=68;
+  const fit = fitParagraphs(ctx, paragraphs, w-margin*2-48, h*0.5, 36, 22, 500, theme.font, 1.38);
+  const blockH = paragraphBlockHeight(fit.wrapped, fit.lineHeight, fit.paraGap) + 140;
+  const y = h-blockH-90;
+  ctx.fillStyle = accent; ctx.fillRect(margin,y,w-margin*2,3);
+  ctx.fillStyle = "rgba(8,11,15,0.68)"; ctx.fillRect(margin,y+12,w-margin*2,blockH-12);
+  ctx.textAlign="left";
+  let ty = y+52;
+  if (kicker){ ctx.font=`600 24px ${theme.font}`; ctx.fillStyle=accent; ctx.fillText(kicker.toUpperCase(), margin+26, ty); ty+=8; }
+  drawParagraphBlock(ctx, fit.wrapped, ty+10, { x:margin+26, align:"left", font:theme.font, weight:500, size:fit.size, lineHeight:fit.lineHeight, paraGap:fit.paraGap, fillStyle:"white" });
+  commonChrome(ctx, o);
+}
+
+const CONTENT_LAYOUTS = { default:drawDefault, letter:drawLetter, dialogue:drawDialogue, report:drawReport, quote:drawQuote };
+
+// ============================================================================
+// RENDU D'UNE SLIDE
+// ============================================================================
+function renderSlide(canvas, slide, ctxOpts){
+  const { w,h,theme,seed,brand,logoImg,bgImage,accent,plan,seriesTag,speakerSides,speakerColors } = ctxOpts;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  drawPremiumBackground(ctx, w, h, theme, seed, slide.chapterIndex, bgImage);
+
+  const base = { w,h,theme,accent,brand,logoImg,plan,seriesTag,speakerSides,speakerColors,slideIndex:slide.slideIndex,total:slide.total };
+  if (slide.type === "cover"){
+    drawCover(ctx, { ...base, title: ctxOpts.title, seriesTag, chapterCount: ctxOpts.chapterCount });
+  } else if (slide.type === "outro"){
+    drawOutro(ctx, { ...base, ctaText: ctxOpts.ctaText });
+  } else if (slide.type === "divider"){
+    drawDivider(ctx, { ...base, title: slide.title, partLabel: slide.partLabel });
+  } else {
+    const fn = CONTENT_LAYOUTS[theme.layout] || drawDefault;
+    fn(ctx, { ...base, kicker: slide.kicker, partLabel: slide.partLabel, paragraphs: slide.paragraphs, slideIndex: slide.slideIndex });
+  }
+}
+
+// ============================================================================
+// UI
+// ============================================================================
+let currentSlides = [];
+let logoImage = null, bgImage = null;
+let logoLoading = null, bgLoading = null;
+
+/** Charge un fichier image choisi par l'utilisateur et affiche un aperçu.
+ * Retourne une promesse résolue quand l'Image est prête à être dessinée
+ * (le bouton Générer attend cette promesse pour éviter un rendu sans logo/fond). */
+function wireImageInput(inputId, previewId, onLoaded){
+  document.getElementById(inputId).addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file){ onLoaded(null); return; }
+    const promise = new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => { onLoaded(img); resolve(img); };
+        img.src = reader.result;
+        const prev = document.getElementById(previewId);
+        prev.src = reader.result; prev.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    });
+    onLoaded(null, promise);
+  });
+}
+wireImageInput("logoFile", "logoPreview", (img, pending) => { if (pending) logoLoading = pending; else { logoImage = img; logoLoading = null; } });
+wireImageInput("bgFile", "bgPreview", (img, pending) => { if (pending) bgLoading = pending; else { bgImage = img; bgLoading = null; } });
+
+function paintSwatches(){
+  const theme = THEMES[document.getElementById("group").value] || THEMES.default;
+  const el = document.getElementById("palettePreview");
+  el.innerHTML = "";
+  [theme.colors[0], theme.colors[1], theme.accent].forEach(c => {
+    const sw = document.createElement("div"); sw.className="swatch"; sw.style.background=c; el.appendChild(sw);
+  });
+}
+document.getElementById("group").addEventListener("change", () => {
+  paintSwatches();
+  document.getElementById("accentOverride").value = (THEMES[document.getElementById("group").value] || THEMES.default).accent;
+});
+
+// ============================================================================
+// BROUILLON — sauvegarde automatique en local (jamais envoyé nulle part),
+// pratique sur téléphone pour ne rien perdre en cas de fermeture accidentelle.
+// ============================================================================
+const DRAFT_KEY = "visualEngineDraft_v1";
+const DRAFT_FIELDS = ["title","series","season","brand","group","format","chapters","density","ctaText","accentOverride","autoCover","chapterDividers","autoOutro","safeZones","templateOverride","exportQuality","fontOverride"];
+function saveDraft(){
+  const data = {};
+  DRAFT_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) data[id] = el.type==="checkbox" ? el.checked : el.value; });
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch(e){}
+}
+function loadDraft(){
+  let data; try { data = JSON.parse(localStorage.getItem(DRAFT_KEY)); } catch(e){ return false; }
+  if (!data) return false;
+  DRAFT_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && id in data){ if (el.type==="checkbox") el.checked = data[id]; else el.value = data[id]; } });
+  return true;
+}
+DRAFT_FIELDS.forEach(id => { const el = document.getElementById(id); if (el){ el.addEventListener("input", saveDraft); el.addEventListener("change", saveDraft); } });
+
+paintSwatches();
+if (loadDraft()){
+  paintSwatches();
+  document.getElementById("status").textContent = "📝 Brouillon restauré automatiquement.";
+}
+document.getElementById("clearDraftBtn").addEventListener("click", () => {
+  try { localStorage.removeItem(DRAFT_KEY); } catch(e){}
+  document.getElementById("status").textContent = "🗑 Brouillon effacé (le formulaire actuel n'est pas modifié).";
+});
+
+// ============================================================================
+// BROUILLONS NOMMÉS — plusieurs histoires en cours, sauvegardées séparément
+// (en plus du brouillon courant restauré automatiquement ci-dessus).
+// ============================================================================
+const DRAFTS_LIST_KEY = "visualEngineDrafts_v1";
+function getSavedDrafts(){ try { return JSON.parse(localStorage.getItem(DRAFTS_LIST_KEY)) || {}; } catch(e){ return {}; } }
+function setSavedDrafts(obj){ try { localStorage.setItem(DRAFTS_LIST_KEY, JSON.stringify(obj)); } catch(e){} }
+function currentFieldsSnapshot(){
+  const data = {};
+  DRAFT_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) data[id] = el.type==="checkbox" ? el.checked : el.value; });
+  return data;
+}
+function refreshSavedDraftsSelect(){
+  const sel = document.getElementById("savedDraftsList");
+  sel.innerHTML = "";
+  const def = document.createElement("option"); def.value=""; def.textContent="— Choisir —"; sel.appendChild(def);
+  Object.keys(getSavedDrafts()).forEach(name => { const o=document.createElement("option"); o.value=name; o.textContent=name; sel.appendChild(o); });
+}
+document.getElementById("saveDraftAsBtn").addEventListener("click", () => {
+  const name = document.getElementById("draftName").value.trim();
+  const statusEl = document.getElementById("status");
+  if (!name){ statusEl.textContent = "⚠ Donne un nom au brouillon avant d'enregistrer."; return; }
+  const drafts = getSavedDrafts();
+  drafts[name] = currentFieldsSnapshot();
+  setSavedDrafts(drafts);
+  refreshSavedDraftsSelect();
+  document.getElementById("savedDraftsList").value = name;
+  statusEl.textContent = `💾 Brouillon "${name}" enregistré.`;
+});
+document.getElementById("loadDraftBtn").addEventListener("click", () => {
+  const name = document.getElementById("savedDraftsList").value;
+  const statusEl = document.getElementById("status");
+  if (!name){ statusEl.textContent = "⚠ Choisis un brouillon dans la liste."; return; }
+  const data = getSavedDrafts()[name];
+  if (!data) return;
+  DRAFT_FIELDS.forEach(id => { const el = document.getElementById(id); if (el && id in data){ if (el.type==="checkbox") el.checked = data[id]; else el.value = data[id]; } });
+  paintSwatches(); saveDraft(); scheduleLivePreview();
+  statusEl.textContent = `📂 Brouillon "${name}" chargé.`;
+});
+document.getElementById("deleteDraftBtn").addEventListener("click", () => {
+  const name = document.getElementById("savedDraftsList").value;
+  const statusEl = document.getElementById("status");
+  if (!name){ statusEl.textContent = "⚠ Choisis un brouillon à supprimer."; return; }
+  const drafts = getSavedDrafts();
+  delete drafts[name];
+  setSavedDrafts(drafts);
+  refreshSavedDraftsSelect();
+  statusEl.textContent = `🗑 Brouillon "${name}" supprimé.`;
+});
+refreshSavedDraftsSelect();
+
+// ============================================================================
+// APERÇU EN DIRECT — mini rendu de la couverture, mis à jour pendant la saisie
+// ============================================================================
+let livePreviewTimer = null;
+function scheduleLivePreview(){ clearTimeout(livePreviewTimer); livePreviewTimer = setTimeout(updateLivePreview, 300); }
+async function updateLivePreview(){
+  if (logoLoading) await logoLoading;
+  if (bgLoading) await bgLoading;
+  const canvas = document.getElementById("livePreview");
+  const dims = FORMATS[document.getElementById("format").value] || FORMATS.REEL_SLIDESHOW;
+  const scale = 340 / dims.w;
+  canvas.width = dims.w * scale; canvas.height = dims.h * scale;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(scale,0,0,scale,0,0);
+  const baseTheme = THEMES[document.getElementById("group").value] || THEMES.default;
+  const fontOverride = document.getElementById("fontOverride").value;
+  const theme = { ...baseTheme, accent: document.getElementById("accentOverride").value || baseTheme.accent,
+    font: (fontOverride && FONT_OVERRIDES[fontOverride]) || baseTheme.font };
+  const title = document.getElementById("title").value.trim() || "Titre de ton histoire";
+  const seriesTag = [document.getElementById("series").value.trim(), document.getElementById("season").value.trim()].filter(Boolean).join(" · ");
+  const brand = document.getElementById("brand").value.trim();
+  const plan = [{ type:"cover", slideIndex:1, total:1 }];
+  drawPremiumBackground(ctx, dims.w, dims.h, theme, "preview-"+title, 0, bgImage);
+  drawCover(ctx, { w:dims.w, h:dims.h, theme, accent:theme.accent, brand, logoImg:logoImage, plan, title, seriesTag, chapterCount:1, slideIndex:1, total:1 });
+}
+["title","series","season","group","format","brand","accentOverride"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el){ el.addEventListener("input", scheduleLivePreview); el.addEventListener("change", scheduleLivePreview); }
+});
+document.getElementById("logoFile").addEventListener("change", scheduleLivePreview);
+document.getElementById("bgFile").addEventListener("change", scheduleLivePreview);
+updateLivePreview();
+
+let seedVariant = 0;async function generateAll(){
+  const statusEl = document.getElementById("status");
+  const genBtn = document.getElementById("generateBtn");
+  const regenBtn = document.getElementById("regenBtn");
+  genBtn.disabled = true; regenBtn.disabled = true; statusEl.textContent = "⏳ Préparation…";
+  if (logoLoading) await logoLoading;
+  if (bgLoading) await bgLoading;
+
+  const title = document.getElementById("title").value.trim();
+  const series = document.getElementById("series").value.trim();
+  const season = document.getElementById("season").value.trim();
+  const brand = document.getElementById("brand").value.trim();
+  const groupKey = document.getElementById("group").value;
+  const format = document.getElementById("format").value;
+  const rawChapters = document.getElementById("chapters").value;
+  const autoCover = document.getElementById("autoCover").checked;
+  const chapterDividers = document.getElementById("chapterDividers").checked;
+  const autoOutro = document.getElementById("autoOutro").checked;
+  const ctaText = document.getElementById("ctaText").value.trim() || "Abonne-toi pour la suite →";
+  const accentOverride = document.getElementById("accentOverride").value;
+  const targetChars = parseInt(document.getElementById("density").value, 10);
+
+  if (!title || !rawChapters.trim()){ statusEl.textContent = "⚠ Titre et chapitres sont obligatoires."; genBtn.disabled=false; regenBtn.disabled=currentSlides.length===0; return; }
+
+  const chapters = parseChapters(rawChapters);
+  if (!chapters.length){ statusEl.textContent = "⚠ Aucun texte détecté."; genBtn.disabled=false; regenBtn.disabled=currentSlides.length===0; return; }
+
+  const baseTheme = THEMES[groupKey] || THEMES.default;
+  const templateOverride = document.getElementById("templateOverride").value;
+  const fontOverride = document.getElementById("fontOverride").value;
+  const theme = { ...baseTheme, accent: accentOverride || baseTheme.accent, layout: templateOverride || baseTheme.layout,
+    font: (fontOverride && FONT_OVERRIDES[fontOverride]) || baseTheme.font };
+  const dims = FORMATS[format];
+  const seriesTag = [series, season].filter(Boolean).join(" · ");
+  const seed = title + "|" + series + (seedVariant ? "|v"+seedVariant : "");
+
+  const plan = buildSlidePlan(chapters, { autoCover, chapterDividers, autoOutro,
+    targetChars: theme.layout === "dialogue" ? 1 : targetChars }); // dialogue : une réplique = une bulle, la densité ne s'applique pas
+
+  // Détection des interlocuteurs (thème Dialogue) : "Nom: texte" en début de
+  // paragraphe attribue un côté de bulle stable + une couleur distincte par nom,
+  // gère aussi 3 interlocuteurs ou plus (couleurs qui tournent, côtés qui alternent).
+  const { speakerSides, speakerColors, groupMode } = computeSpeakerMeta(plan, theme);
+
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = ""; currentSlides = [];
+
+  plan.forEach((slide, i) => {
+    const canvas = document.createElement("canvas");
+    renderSlide(canvas, slide, {
+      w:dims.w, h:dims.h, theme, seed, brand, logoImg:logoImage, bgImage, accent:theme.accent, plan, speakerSides, speakerColors,
+      title, seriesTag, chapterCount:chapters.length, ctaText,
+    });
+    canvas.style.cursor = "pointer";
+    canvas.addEventListener("click", () => openPreview(canvas));
+    const box = document.createElement("div"); box.className="slide-box"; box.style.position="relative"; box.appendChild(canvas);
+    const base = `slide-${String(i+1).padStart(2,"0")}`;
+    const dl = document.createElement("a"); dl.className="dl"; dl.textContent=`⬇ ${i+1}`; dl.href="#";
+    dl.addEventListener("click",(e)=>{ e.preventDefault(); e.stopPropagation(); downloadCanvas(canvas, base); });
+    box.appendChild(dl);
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "✕"; delBtn.title = "Retirer cette image";
+    delBtn.style.cssText = "position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.65);color:#fff;border:1px solid rgba(255,255,255,0.25);font-size:14px;cursor:pointer;z-index:5;line-height:1;";
+    delBtn.addEventListener("click",(e)=>{ e.stopPropagation(); box.remove(); currentSlides = currentSlides.filter(s=>s.canvas!==canvas); });
+    box.appendChild(delBtn);
+    if (document.getElementById("safeZones").checked && format !== "CAROUSEL") addSafeZoneOverlay(box);
+    gallery.appendChild(box);
+    currentSlides.push({ canvas, base });
+  });
+
+  document.getElementById("galleryCard").style.display = "block";
+  statusEl.textContent = `✔ ${plan.length} visuel(s) généré(s).` + (groupMode ? " (mode conversation de groupe activé)" : "");
+  document.getElementById("videoCard").style.display = format==="REEL_VIDEO" ? "block" : "none";
+
+  document.getElementById("captionText").value = buildCaption({
+    title, seriesTag, groupKey, brand, hook: chapters[0]?.paragraphs?.[0] || "",
+  });
+  document.getElementById("captionCard").style.display = "block";
+
+  genBtn.disabled = false; regenBtn.disabled = false;
+}
+
+document.getElementById("generateBtn").addEventListener("click", () => { seedVariant = 0; generateAll(); });
+document.getElementById("regenBtn").addEventListener("click", () => { seedVariant++; generateAll(); });
+
+/** Repères visuels (aperçu uniquement, jamais gravés dans l'image exportée)
+ * indiquant les zones souvent masquées par l'interface Reels/Stories
+ * (icônes en haut, légende/boutons en bas). */
+function addSafeZoneOverlay(box){
+  box.style.position = "relative";
+  const mk = (css) => { const d=document.createElement("div"); d.style.cssText=css; return d; };
+  box.appendChild(mk("position:absolute;left:0;right:0;top:13%;border-top:2px dashed rgba(255,90,90,0.85);pointer-events:none;"));
+  box.appendChild(mk("position:absolute;left:0;right:0;bottom:13%;border-top:2px dashed rgba(255,90,90,0.85);pointer-events:none;"));
+  const label = mk("position:absolute;left:6px;top:calc(13% + 4px);color:rgba(255,160,160,0.95);font-size:10px;font-weight:700;pointer-events:none;text-shadow:0 1px 2px #000;");
+  label.textContent = "ZONE SÛRE";
+  box.appendChild(label);
+}
+
+function currentExportFormat(){
+  const v = document.getElementById("exportQuality").value;
+  return v === "png" ? { mime:"image/png", ext:"png", quality:undefined } : { mime:"image/jpeg", ext:"jpg", quality:0.94 };
+}
+
+function openPreview(canvas){
+  const { mime, quality } = currentExportFormat();
+  document.getElementById("previewImg").src = canvas.toDataURL(mime, quality);
+  document.getElementById("previewModal").style.display = "flex";
+}
+document.getElementById("previewModal").addEventListener("click", () => { document.getElementById("previewModal").style.display = "none"; });
+
+function downloadCanvas(canvas, baseName){
+  const { mime, ext, quality } = currentExportFormat();
+  canvas.toBlob((blob)=>{ const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=`${baseName}.${ext}`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),4000); }, mime, quality);
+}
+document.getElementById("downloadAllBtn").addEventListener("click", () => {
+  currentSlides.forEach((s,i)=> setTimeout(()=>downloadCanvas(s.canvas, s.base), i*400));
+});
+
+document.getElementById("shareBtn").addEventListener("click", async () => {
+  if (!currentSlides.length) return;
+  const statusEl = document.getElementById("status");
+  const { mime, ext, quality } = currentExportFormat();
+  const files = await Promise.all(currentSlides.map(s => new Promise(resolve => {
+    s.canvas.toBlob(blob => resolve(new File([blob], `${s.base}.${ext}`, { type: mime })), mime, quality);
+  })));
+  const shareData = { files, title: document.getElementById("title").value.trim() || "Visuels", text: document.getElementById("captionText").value || "" };
+  if (navigator.canShare && navigator.canShare({ files })){
+    try { await navigator.share(shareData); }
+    catch(e){ if (e.name !== "AbortError") statusEl.textContent = "⚠ Partage annulé ou indisponible."; }
+  } else {
+    statusEl.textContent = "⚠ Le partage direct n'est pas supporté par ce navigateur — utilise le téléchargement ou le .zip.";
+  }
+});
+
+// ============================================================================
+// LÉGENDE SUGGÉRÉE — accroche + hashtags adaptés à l'ambiance choisie
+// ============================================================================
+const HASHTAGS = {
+  "Récit personnel": ["#histoirevraie","#témoignage","#vécu"],
+  "Correspondance": ["#lettre","#confession","#nonenvoyée"],
+  "Dialogue": ["#conversation","#texto","#discussion"],
+  "Mystère": ["#mystère","#suspense","#révélation"],
+  "Aventure & imaginaire": ["#aventure","#imaginaire","#fiction"],
+  "Science & futur": ["#science","#futur","#innovation"],
+  "Spirituel & philosophique": ["#spiritualité","#philosophie","#réflexion"],
+  "Humour & social": ["#humour","#viral","#tellementvrai"],
+  "Documentaire": ["#documentaire","#faits","#histoire"],
+  "default": ["#histoire","#storytelling"],
+};
+function buildCaption({ title, seriesTag, groupKey, brand, hook }){
+  const tags = [...new Set([...(HASHTAGS[groupKey]||HASHTAGS.default), "#histoire", "#storytelling"])].slice(0,8);
+  let caption = title;
+  if (hook) caption += `\n\n${hook.length>150 ? hook.slice(0,150)+"…" : hook}`;
+  if (seriesTag) caption += `\n\n📖 ${seriesTag}`;
+  caption += `\n\n${tags.join(" ")}`;
+  if (brand) caption += `\n${brand}`;
+  return caption;
+}
+document.getElementById("copyCaptionBtn").addEventListener("click", async () => {
+  const ta = document.getElementById("captionText");
+  try { await navigator.clipboard.writeText(ta.value); } catch(e){ ta.select(); document.execCommand("copy"); }
+  const btn = document.getElementById("copyCaptionBtn"); const orig = btn.textContent;
+  btn.textContent = "✔ Copié !"; setTimeout(()=>btn.textContent=orig, 1500);
+});
+
+// ============================================================================
+// ZIP — mini-implémentation vanilla JS (méthode "store", sans compression),
+// pour télécharger toutes les images en un seul fichier, sans dépendance.
+// ============================================================================
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t;
+})();
+function crc32(buf){ let crc=0^(-1); for(let i=0;i<buf.length;i++) crc=(crc>>>8)^CRC_TABLE[(crc^buf[i])&0xFF]; return (crc^(-1))>>>0; }
+function u16(v){ return new Uint8Array([v&0xFF,(v>>>8)&0xFF]); }
+function u32(v){ return new Uint8Array([v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF]); }
+function concatBytes(arrays){ let len=0; arrays.forEach(a=>len+=a.length); const out=new Uint8Array(len); let o=0; arrays.forEach(a=>{ out.set(a,o); o+=a.length; }); return out; }
+
+async function buildZip(entries){
+  const enc = new TextEncoder();
+  const localParts = [], centralParts = [];
+  let offset = 0;
+  for (const { name, blob } of entries){
+    const data = new Uint8Array(await blob.arrayBuffer());
+    const crc = crc32(data);
+    const nameBytes = enc.encode(name);
+    const local = concatBytes([ u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(nameBytes.length), u16(0), nameBytes ]);
+    localParts.push(local, data);
+    centralParts.push(concatBytes([ u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
+      u32(crc), u32(data.length), u32(data.length), u16(nameBytes.length), u16(0), u16(0), u16(0), u16(0), u32(0),
+      u32(offset), nameBytes ]));
+    offset += local.length + data.length;
+  }
+  const centralAll = concatBytes(centralParts);
+  const end = concatBytes([ u32(0x06054b50), u16(0), u16(0), u16(entries.length), u16(entries.length),
+    u32(centralAll.length), u32(offset), u16(0) ]);
+  return new Blob([concatBytes([...localParts, centralAll, end])], { type:"application/zip" });
+}
+
+document.getElementById("downloadZipBtn").addEventListener("click", async () => {
+  if (!currentSlides.length) return;
+  const btn = document.getElementById("downloadZipBtn");
+  const original = btn.textContent; btn.textContent = "⏳ Compression…"; btn.disabled = true;
+  const { mime, ext, quality } = currentExportFormat();
+  const entries = await Promise.all(currentSlides.map(s => new Promise(resolve => {
+    s.canvas.toBlob(blob => resolve({ name: `${s.base}.${ext}`, blob }), mime, quality);
+  })));
+  const zipBlob = await buildZip(entries);
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement("a"); a.href = url; a.download = "visuels.zip"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  btn.textContent = original; btn.disabled = false;
+});
+
+// ============================================================================
+// VIDÉO — MediaRecorder natif, fondu enchaîné
+// ============================================================================
+document.getElementById("videoBtn").addEventListener("click", async () => {
+  if (!currentSlides.length) return;
+  const statusEl = document.getElementById("videoStatus");
+  const btn = document.getElementById("videoBtn"); btn.disabled = true;
+  const secondsPerSlide = parseFloat(document.getElementById("vidDuration").value);
+  const ZOOM = parseFloat(document.getElementById("vidZoom").value);
+  const transition = document.getElementById("vidTransition").value;
+  const fps = 30;
+  const dims = FORMATS.REEL_VIDEO;
+  const rec = document.createElement("canvas"); rec.width=dims.w; rec.height=dims.h;
+  const rctx = rec.getContext("2d");
+  const stream = rec.captureStream(fps);
+  const mimeCandidates = ["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm","video/mp4"];
+  const mimeType = mimeCandidates.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+  const recorder = new MediaRecorder(stream, mimeType?{mimeType}:undefined);
+  const chunks = []; recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  const done = new Promise(res => recorder.onstop = res);
+  recorder.start();
+  const total = currentSlides.length, frameMs = 1000/fps, holdFrames = Math.round(secondsPerSlide*fps);
+  const fadeFrames = transition==="fade" ? Math.round(0.5*fps) : 0;
+  const drawZoomed = (canvas, t) => {
+    const scale = 1 + ZOOM*t;
+    const sw = dims.w*scale, sh = dims.h*scale;
+    rctx.drawImage(canvas, (dims.w-sw)/2, (dims.h-sh)/2, sw, sh);
+  };
+  for (let i=0;i<total;i++){
+    for (let f=0; f<holdFrames; f++){
+      drawZoomed(currentSlides[i].canvas, f/holdFrames);
+      if (f<fadeFrames && i>0){ rctx.globalAlpha=1-(f/fadeFrames); drawZoomed(currentSlides[i-1].canvas, 1); rctx.globalAlpha=1; }
+      statusEl.textContent = `⏺ Slide ${i+1}/${total}…`;
+      await new Promise(r=>setTimeout(r,frameMs));
+    }
+  }
+  recorder.stop(); await done;
+  const blob = new Blob(chunks, { type: mimeType || "video/webm" });
+  const url = URL.createObjectURL(blob);
+  const video = document.getElementById("videoPreview"); video.src=url; video.style.display="block";
+  const dlLink = document.getElementById("videoDownload"); dlLink.href=url; dlLink.style.display="block";
+  dlLink.download = mimeType.includes("mp4") ? "reel.mp4" : "reel.webm";
+  statusEl.textContent = "✔ Vidéo prête."; btn.disabled=false;
+});
+</script>
+</body>
+</html>
